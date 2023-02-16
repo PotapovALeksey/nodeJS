@@ -1,10 +1,15 @@
-const {NotFound} = require("http-errors");
+const { NotFound } = require("http-errors");
+const { Types } = require('mongoose');
 
-const contactService = require("../../models/contacts.model");
-const {createSuccessResponse} = require("../../utils/create-success-response.util");
+const { ContactModel } = require("../../models/contact.model");
+const { createSuccessResponse } = require("../../utils/create-success-response.util");
 
 const getContact = async (req, res) => {
-    const contact = await contactService.getContact(req.params.contactId);
+    if (!Types.ObjectId.isValid(req.params.contactId)) {
+        throw new NotFound();
+    }
+
+    const contact = await ContactModel.findById(req.params.contactId);
 
     if (contact === null) {
         throw new NotFound();

@@ -1,15 +1,20 @@
-const { NotFound } = require("http-errors");
-console.log('NotFound', NotFound);
+const { NotFound, BadRequest } = require("http-errors");
+const {Types} = require("mongoose");
+const { formatISO } = require('date-fns');
+
 const {isString} = require("../../utils/is-data.util");
-const contactService = require("../../models/contacts.model");
 const {createSuccessResponse} = require("../../utils/create-success-response.util");
+const {ContactModel} = require("../../models/contact.model");
 
 const deleteContact = async (req, res) => {
     if (!isString(req.params.contactId)) {
-        throw new NotFound('ContactId is missing')
+        throw new BadRequest('ContactId is missing');
+    }
+    if (!Types.ObjectId.isValid(req.params.contactId)) {
+        throw new NotFound();
     }
 
-    const removedContact = await contactService.removeContact(req.params.contactId);
+    const removedContact = await ContactModel.findByIdAndUpdate(req.params.contactId, { deletedAt: formatISO(Date.now()) });
 
     if (removedContact === null) {
         throw new NotFound();
